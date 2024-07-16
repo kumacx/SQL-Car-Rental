@@ -1,1 +1,1 @@
-# SQL-Car-Rental
+# SQL Car Rental

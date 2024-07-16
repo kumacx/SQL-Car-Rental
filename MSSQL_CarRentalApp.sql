@@ -2,8 +2,8 @@
 ------TWORZENIE TABEL------
 
 
---Na pocz�tku upewnie si�, �e baza jest czysta
---Robi� to aby w fazie testowania ka�dy Execute ca�ej bazy zwraca� wyniki niezale�ne od poprzednich wywo�a�
+--Na początku upewnie się, że baza jest czysta
+--Robię to aby w fazie testowania każdy Execute całej bazy zwracał wyniki niezależne od poprzednich wywołań
 IF EXISTS (
 	SELECT 1
 		FROM sysobjects o
@@ -38,8 +38,8 @@ GO
 
 
 --Tabela AUTA
-IF NOT EXISTS (  --Dla upewnienia si� �e nie ma tych tabel, wiem �e niepotrzebne w tej chwili,
-	SELECT 1     --ale dzi�ki nim mo�na usun�� powy�sze czyszczenie bazy.
+IF NOT EXISTS (  --Dla upewnienia się że nie ma tych tabel, wiem że niepotrzebne w tej chwili,
+	SELECT 1     --ale dzięki nim można usunąć powyższe czyszczenie bazy.
 		FROM sysobjects o
 		WHERE (OBJECTPROPERTY(o.[id],'IsUserTable') = 1)
 		AND o.[name] = 'AUTA'
@@ -91,14 +91,14 @@ GO
 
 
 
-------TWORZENIE TRIGGER�W------
+------TWORZENIE TRIGGERÓW------
 
 
 ----Triggery na auta
 
 --Trigger na insert:
 
---Usuni�cie je�li ju� istnieje
+--Usunięcie jeśli już istnieje
 IF EXISTS (SELECT 1 FROM sys.triggers WHERE name = 'TR_AUTA_INS' AND parent_class_desc = 'OBJECT_OR_COLUMN')
 BEGIN
 	drop trigger TR_AUTA_INS
@@ -109,10 +109,10 @@ GO
 CREATE TRIGGER dbo.TR_AUTA_INS ON AUTA FOR INSERT 
 AS
 
---Upewnienie si�, �e nie pr�bowano uzupe�ni� liczby dost�pnych r�cznie
+--Upewnienie się, że nie próbowano uzupełnić liczby dostępnych ręcznie
 	IF EXISTS (SELECT 1 FROM inserted WHERE LICZBA_DOSTEPNYCH NOT IN(0))
 		BEGIN
-			RAISERROR (N'Liczba dost�pnych aut jest okre�lana automatycznie!', 16, 1)
+			RAISERROR (N'Liczba dostępnych aut jest określana automatycznie!', 16, 1)
 			ROLLBACK TRAN
 		END
 
@@ -131,7 +131,7 @@ GO
 
 --Trigger na update:
 
---Usuni�cie je�li ju� istnieje
+--Usunięcie jeśli już istnieje
 IF EXISTS (SELECT 1 FROM sys.triggers WHERE name = 'TR_AUTA_UPT' AND parent_class_desc = 'OBJECT_OR_COLUMN')
 BEGIN
 	drop trigger TR_AUTA_UPT
@@ -151,12 +151,12 @@ AS
 
 	IF EXISTS (SELECT 1 FROM AUTA WHERE LICZBA_DOSTEPNYCH < 0)
 		BEGIN
-			RAISERROR (N'Liczba dost�pnych aut nie mo�e by� mniejsza od 0!', 16, 1)
+			RAISERROR (N'Liczba dostępnych aut nie może być mniejsza od 0!', 16, 1)
 			ROLLBACK TRAN
 		END
 		IF EXISTS (SELECT 1 FROM AUTA WHERE LICZBA_DOSTEPNYCH > LICZBA_ZAK)
 		BEGIN
-			RAISERROR (N'Liczba dost�pnych aut nie mo�e by� wi�ksza ni� liczba zakupionych!', 16, 1)
+			RAISERROR (N'Liczba dostępnych aut nie może być większa niż liczba zakupionych!', 16, 1)
 			ROLLBACK TRAN
 		END
 GO
@@ -166,7 +166,7 @@ GO
 
 ----Trigger na wynajem:
 
---Usuni�cie je�li ju� istnieje
+--Usunięcie jeśli już istnieje
 IF EXISTS (SELECT 1 FROM sys.triggers WHERE name = 'TR_WYN_AUTA' AND parent_class_desc = 'OBJECT_OR_COLUMN')
 BEGIN
 	drop trigger TR_WYN_AUTA
@@ -176,7 +176,7 @@ GO
 CREATE TRIGGER dbo.TR_WYN_AUTA ON WYNAJEM FOR UPDATE, INSERT, DELETE 
 AS	
 BEGIN
-    -- Obs�uga zwi�kszenia (przy usuni�ciu wynajmu)
+    -- Obsługa zwiększenia (przy usunięciu wynajmu)
     IF EXISTS (SELECT 1 FROM deleted d WHERE d.LICZBA > 0)
     BEGIN
         UPDATE AUTA
@@ -185,7 +185,7 @@ BEGIN
         JOIN deleted d ON AUTA.ID_AUTA = d.ID_AUTA;
     END
 
-    -- Obs�uga zmniejszenia
+    -- Obsługa zmniejszenia
     IF EXISTS (SELECT 1 FROM inserted i WHERE i.LICZBA > 0)
     BEGIN
 	select * from inserted
@@ -202,7 +202,7 @@ GO
 
 ----Trigger na zwrot:
 
---Usuni�cie je�li ju� istnieje
+--Usunięcie jeśli już istnieje
 IF EXISTS (SELECT 1 FROM sys.triggers WHERE name = 'TR_ZWR_AUTA' AND parent_class_desc = 'OBJECT_OR_COLUMN')
 BEGIN
 	drop trigger TR_ZWR_AUTA
@@ -212,7 +212,7 @@ GO
 CREATE TRIGGER dbo.TR_ZWR_AUTA ON ZWROT FOR UPDATE, INSERT, DELETE 
 AS	
 BEGIN
-    -- Obs�uga zmniejszenia (przy usuni�ciu zwrotu)
+    -- Obsługa zmniejszenia (przy usunięciu zwrotu)
     IF EXISTS (SELECT 1 FROM deleted d WHERE d.LICZBA > 0)
     BEGIN
         UPDATE AUTA
@@ -221,7 +221,7 @@ BEGIN
         JOIN deleted d ON AUTA.ID_AUTA = d.ID_AUTA;
     END
 
-    -- Obs�uga zwi�kszenia
+    -- Obsługa zwiększenia
     IF EXISTS (SELECT 1 FROM inserted i WHERE i.LICZBA > 0)
     BEGIN
 	select * from inserted
@@ -244,7 +244,7 @@ GO
 
 
 
---Wstawienie dw�ch modeli do AUTA:
+--Wstawienie dwóch modeli do AUTA:
 
 INSERT INTO AUTA (MODEL_AUTA, LICZBA_ZAK) 
 	SELECT 'Audi', 100 
@@ -309,7 +309,7 @@ ID_ZAK      ID_AUTA     LICZBA
 ----------------------------------------------------------------------
 
 
---Zapisuje sobie id aut w zmeinne do dalszych test�w
+--Zapisuje sobie id aut w zmeinne do dalszych testów
 declare @id_audi int
 SET @id_audi = (select ID_AUTA from AUTA where MODEL_AUTA = 'Audi')
 declare @id_merc int
@@ -319,7 +319,7 @@ SET @id_merc = (select ID_AUTA from AUTA where MODEL_AUTA = 'Mercedes')
 ----------------------------------------------------------------------
 
 
---Wstawianie wielu rekord�w na raz do WYNAJEM
+--Wstawianie wielu rekordów na raz do WYNAJEM
 
 INSERT INTO WYNAJEM (ID_AUTA, LICZBA) 
 	SELECT @id_audi, 25 
@@ -355,7 +355,7 @@ ID_ZAK      ID_AUTA     LICZBA
 ----------------------------------------------------------------------
 
 
---Teraz usuniemy poprzednie wynaj�cie Mercedesa
+--Teraz usuniemy poprzednie wynajęcie Mercedesa
 
 DELETE WYNAJEM WHERE ID_AUTA = @id_merc
 
@@ -387,7 +387,7 @@ ID_ZAK      ID_AUTA     LICZBA
 ----------------------------------------------------------------------
 
 
---Wstawienie na raz dw�ch wynaj�� dla Merdecesa:
+--Wstawienie na raz dwóch wynajęć dla Merdecesa:
 
 INSERT INTO WYNAJEM (ID_AUTA, LICZBA) 
 	SELECT @id_merc, 10
@@ -424,7 +424,7 @@ ID_ZAK      ID_AUTA     LICZBA
 ----------------------------------------------------------------------
 
 
---Zmodyfikujemy dwa powy�sze wynajmy z Mercedesa na Audi
+--Zmodyfikujemy dwa powyższe wynajmy z Mercedesa na Audi
 
 UPDATE WYNAJEM SET ID_AUTA = @id_audi WHERE ID_AUTA = @id_merc
 
@@ -458,9 +458,9 @@ ID_ZAK      ID_AUTA     LICZBA
 ----------------------------------------------------------------------
 
 
---Przechodzimy do testowania zwrot�w
+--Przechodzimy do testowania zwrotów
 
---Zwr�c� na raz 22 i 25 Audi
+--Zwrócę na raz 22 i 25 Audi
 INSERT INTO ZWROT(ID_AUTA, LICZBA) 
 	SELECT @id_audi, 22
 	UNION ALL 
@@ -498,8 +498,8 @@ ID_ZAK      ID_AUTA     LICZBA
 ----------------------------------------------------------------------
 
 
---Teraz wynajme troche Mercedes�w �eby m�c zmieni� powy�sze zwroty z Audi na Mercedes
-INSERT INTO WYNAJEM (ID_AUTA, LICZBA) SELECT @id_merc, 47 --47 bo tyle bylo zwrot�w Audi wiec powinny Mercedesy wyj�� na zero
+--Teraz wynajme troche Mercedesów żeby móc zmienić powyższe zwroty z Audi na Mercedes
+INSERT INTO WYNAJEM (ID_AUTA, LICZBA) SELECT @id_merc, 47 --47 bo tyle bylo zwrotów Audi wiec powinny Mercedesy wyjść na zero
 
 UPDATE ZWROT SET ID_AUTA = @id_merc WHERE ID_AUTA = @id_audi
 
@@ -536,7 +536,7 @@ ID_ZAK      ID_AUTA     LICZBA
 ----------------------------------------------------------------------
 
 
---Usun� oba zwroty Mercedes�w
+--Usunę oba zwroty Mercedesów
 DELETE ZWROT WHERE ID_AUTA = @id_merc
 
 --Wynik:
@@ -570,12 +570,12 @@ ID_ZAK      ID_AUTA     LICZBA
 ----------------------------------------------------------------------
 
 
---Przetestujmy jeszcze zmian� LICZBY_DOSTEPNYCH gdy zmienimy LICZBE_ZAK gdy s� jakie� wynaj�te 
+--Przetestujmy jeszcze zmianę LICZBY_DOSTEPNYCH gdy zmienimy LICZBE_ZAK gdy są jakieś wynajęte 
 
 UPDATE AUTA SET LICZBA_ZAK = 120 where ID_AUTA = @id_audi
 
---Wcze�niej LICZBA_ZAK dla Audi by�a 60 wi�c jak zmienili�my j� na 120 to powinno przyby� 60 dost�pnych
---I tak te� si� sta�o:
+--Wcześniej LICZBA_ZAK dla Audi była 60 więc jak zmieniliśmy ją na 120 to powinno przybyć 60 dostępnych
+--I tak też się stało:
 
 --Wynik:
 select ID_AUTA, LEFT(MODEL_AUTA, 22) as MODEL, LICZBA_ZAK, LICZBA_DOSTEPNYCH from auta
@@ -605,11 +605,11 @@ ID_ZAK      ID_AUTA     LICZBA
 */
 
 
---A teraz w drug� stron� (zmniejszenie LICZBA_ZAK)
+--A teraz w drugą stronę (zmniejszenie LICZBA_ZAK)
 
 UPDATE AUTA SET LICZBA_ZAK = 90 where ID_AUTA = @id_audi
 
---Teraz zmniejszyli�my LICZBA_ZAK do 90 (zmniejszenie o 30) wi�c LICZBA_DOSTEPNYCH zmniejszy�a si� o 30:
+--Teraz zmniejszyliśmy LICZBA_ZAK do 90 (zmniejszenie o 30) więc LICZBA_DOSTEPNYCH zmniejszyła się o 30:
 
 --Wynik:
 select ID_AUTA, LEFT(MODEL_AUTA, 22) as MODEL, LICZBA_ZAK, LICZBA_DOSTEPNYCH from auta
@@ -644,22 +644,22 @@ ID_ZAK      ID_AUTA     LICZBA
 
 
 
-----Zosta�y do przetestowania triggery sprawdzaj�ce poprawno�� LICZBA_DOSTEPNYCH
+----Zostały do przetestowania triggery sprawdzające poprawność LICZBA_DOSTEPNYCH
 
 
---Spr�bujmy zwr�ci� na raz tyle Audi aby by�o ich wi�cej ni� ich LICZBA_ZAKUPIONYCH
+--Spróbujmy zwrócić na raz tyle Audi aby było ich więcej niż ich LICZBA_ZAKUPIONYCH
 
 INSERT INTO ZWROT (ID_AUTA, LICZBA) SELECT @id_audi, 1000
 
 --Wynik:
 /*
 Msg 50000, Level 16, State 1, Procedure TR_AUTA_UPT, Line 20
-Liczba dost�pnych aut nie mo�e by� wi�ksza ni� liczba zakupionych!
+Liczba dostępnych aut nie może być większa niż liczba zakupionych!
 Msg 3609, Level 16, State 1, Procedure TR_ZWR_AUTA, Line 18
 The transaction ended in the trigger. The batch has been aborted.
 */
 
---Wyskoczy� Error powiadamiaj�cy o b��dzie a tablice zgodnie z oczekiwaniami nie zosta�y zmienione
+--Wyskoczył Error powiadamiający o błędzie a tablice zgodnie z oczekiwaniami nie zostały zmienione
 
 select ID_AUTA, LEFT(MODEL_AUTA, 22) as MODEL, LICZBA_ZAK, LICZBA_DOSTEPNYCH from auta
 select * from wynajem
@@ -690,19 +690,19 @@ ID_ZAK      ID_AUTA     LICZBA
 
 
 
---Teraz druga mo�liwo��, wydanie tyle aut aby licznik dost�pnych by� ujemny:
+--Teraz druga możliwość, wydanie tyle aut aby licznik dostępnych był ujemny:
 
 INSERT INTO WYNAJEM (ID_AUTA, LICZBA) SELECT @id_merc, 220
 
 --Wynik:
 /*
 Msg 50000, Level 16, State 1, Procedure TR_AUTA_UPT, Line 15
-Liczba dost�pnych aut nie mo�e by� mniejsza od 0!
+Liczba dostępnych aut nie może być mniejsza od 0!
 Msg 3609, Level 16, State 1, Procedure TR_WYN_AUTA, Line 18
 The transaction ended in the trigger. The batch has been aborted.
 */
 
---Wyskoczy� Error powiadamiaj�cy o b��dzie a tablice zgodnie z oczekiwaniami nie zosta�y zmienione
+--Wyskoczył Error powiadamiający o błędzie a tablice zgodnie z oczekiwaniami nie zostały zmienione
 
 select ID_AUTA, LEFT(MODEL_AUTA, 22) as MODEL, LICZBA_ZAK, LICZBA_DOSTEPNYCH from auta
 select * from wynajem
